@@ -47,6 +47,10 @@ export default function Home() {
             <>
               <Separator className="my-12" />
 
+              <StrategySection />
+
+              <Separator className="my-12" />
+
               <div className="grid md:grid-cols-2 gap-8">
                  <Card className="flex flex-col">
                   <CardHeader>
@@ -89,10 +93,6 @@ export default function Home() {
                   </CardContent>
                 </Card>
               </div>
-
-              <Separator className="my-12" />
-
-              <StrategySection />
             </>
           )}
         </div>
