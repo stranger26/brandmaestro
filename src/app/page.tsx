@@ -46,19 +46,28 @@ export default function Home() {
           {brandGuidelines && (
             <>
               <Separator className="my-12" />
-              <div className="text-center">
-                  <Button asChild variant="outline" size="lg">
-                    <Link href="/brandcheck">
-                      <CheckCircle className="mr-2" />
-                      Run a Brand Compliance Check
-                    </Link>
-                  </Button>
-              </div>
-
-              <Separator className="my-12" />
 
               <div className="grid md:grid-cols-2 gap-8">
-                <StrategySection />
+                 <Card className="flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold font-headline tracking-tight">Brand Compliance</CardTitle>
+                    <CardDescription>
+                      Check a new video against your brand guidelines.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow flex flex-col items-center justify-center text-center">
+                    <CheckCircle className="w-16 h-16 text-primary mb-4" />
+                     <p className="mb-6 text-muted-foreground">
+                      Ensure your content aligns perfectly with your extracted brand DNA.
+                    </p>
+                    <Button asChild size="lg" variant="outline" className="w-full">
+                        <Link href="/brandcheck">
+                        Run a Brand Compliance Check
+                        <ArrowRight className="ml-2" />
+                        </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
                 <Card className="flex flex-col">
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold font-headline tracking-tight">Video Generation</CardTitle>
@@ -80,6 +89,10 @@ export default function Home() {
                   </CardContent>
                 </Card>
               </div>
+
+              <Separator className="my-12" />
+
+              <StrategySection />
             </>
           )}
         </div>
