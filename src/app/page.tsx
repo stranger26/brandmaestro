@@ -6,9 +6,8 @@ import { BrandExtractionSection } from '@/components/brand-extraction-section';
 import { StrategySection } from '@/components/strategy-section';
 import type { ExtractBrandElementsOutput } from '@/ai/flows/extract-brand-elements-from-videos';
 import { Separator } from '@/components/ui/separator';
-import { VideogenSection } from '@/components/videogen-section';
 import { Button } from '@/components/ui/button';
-import { Film, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 export default function Home() {
   const [brandGuidelines, setBrandGuidelines] =
@@ -48,8 +47,6 @@ export default function Home() {
                   </Link>
                 </Button>
               </div>
-              <Separator className="my-12" />
-              <VideogenSection brandGuidelines={brandGuidelines} />
             </>
           )}
         </div>
