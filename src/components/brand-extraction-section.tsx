@@ -201,7 +201,7 @@ export function BrandExtractionSection({
                   <CardHeader><CardTitle>Tone &amp; Language</CardTitle></CardHeader>
                   <CardContent className="space-y-2">
                     <p><strong>Sentiment:</strong> {extractedData.audioAndNarrativeStyle.toneAndLanguage.sentiment}</p>
-                    <p><strong>Linguistic Tone:</strong> {extractedData.audioAndNarrativeStyle.toneAndLanguage.linguisticToneClassifier}</p>
+                    <p><strong>Linguistic Tone:</strong> {extractedData.audioAndNarrativeStyle.toneAndlanguage.linguisticToneClassifier}</p>
                   </CardContent>
                 </Card>
                 <Card>
