@@ -6,6 +6,7 @@ import { ComplianceSection } from '@/components/compliance-section';
 import { StrategySection } from '@/components/strategy-section';
 import type { ExtractBrandElementsOutput } from '@/ai/flows/extract-brand-elements-from-videos';
 import { Separator } from '@/components/ui/separator';
+import { VideogenSection } from '@/components/videogen-section';
 
 export default function Home() {
   const [brandGuidelines, setBrandGuidelines] =
@@ -24,6 +25,8 @@ export default function Home() {
               <ComplianceSection brandGuidelines={brandGuidelines} />
               <Separator className="my-12" />
               <StrategySection />
+              <Separator className="my-12" />
+              <VideogenSection brandGuidelines={brandGuidelines} />
             </>
           )}
         </div>
