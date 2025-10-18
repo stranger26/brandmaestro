@@ -38,22 +38,37 @@ interface BrandExtractionSectionProps {
   onExtractionComplete: (guidelines: ExtractBrandElementsOutput) => void;
 }
 
+const toDataURI = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
 export function BrandExtractionSection({
   onExtractionComplete,
 }: BrandExtractionSectionProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
-  const [videoUrls, setVideoUrls] = useState<string[]>(['', '', '']);
+  const [videoInputs, setVideoInputs] = useState<({url: string; file: File | null; type: 'url' | 'file'})[]>([
+    {url: '', file: null, type: 'url'},
+    {url: '', file: null, type: 'url'},
+    {url: '', file: null, type: 'url'},
+  ]);
   const [mostRepresentative, setMostRepresentative] = useState('0');
   const [extractedData, setExtractedData] =
     useState<ExtractBrandElementsOutput | null>(null);
 
   const handleSubmit = async () => {
-    const filledUrls = videoUrls.filter((url) => url.trim() !== '');
+    const filledUrls = videoInputs
+      .map(input => input.type === 'url' ? input.url : input.file)
+      .filter(input => !!input);
+    
     if (filledUrls.length === 0) {
       toast({
         title: 'No Videos Provided',
-        description: 'Please provide at least one YouTube URL.',
+        description: 'Please provide at least one YouTube URL or upload a video.',
         variant: 'destructive',
       });
       return;
@@ -61,8 +76,20 @@ export function BrandExtractionSection({
 
     startTransition(async () => {
       try {
+        const videoDataUris = await Promise.all(videoInputs.map(async (input) => {
+          if (input.type === 'url' && input.url) {
+            return input.url;
+          }
+          if (input.type === 'file' && input.file) {
+            return await toDataURI(input.file);
+          }
+          return null;
+        }));
+
+        const finalUrls = videoDataUris.filter(Boolean) as string[];
+
         const result = await handleExtractBrandElements({
-          videoUrls: filledUrls,
+          videoUrls: finalUrls,
           mostRepresentativeVideoIndex: parseInt(mostRepresentative, 10),
         });
         setExtractedData(result);
@@ -81,12 +108,24 @@ export function BrandExtractionSection({
     });
   };
 
-  const handleUrlChange = (index: number, value: string) => {
-    const newUrls = [...videoUrls];
-    newUrls[index] = value;
-    setVideoUrls(newUrls);
+  const handleInputChange = (index: number, value: string | File | null, type: 'url' | 'file') => {
+    const newInputs = [...videoInputs];
+    if (type === 'url' && typeof value === 'string') {
+      newInputs[index] = { url: value, file: null, type: 'url' };
+    } else if (type === 'file' && value instanceof File) {
+      newInputs[index] = { url: '', file: value, type: 'file' };
+    } else if (type === 'file' && value === null) {
+      newInputs[index].file = null;
+    }
+    setVideoInputs(newInputs);
   };
   
+  const handleTabChange = (index: number, type: 'url' | 'file') => {
+    const newInputs = [...videoInputs];
+    newInputs[index].type = type;
+    setVideoInputs(newInputs);
+  }
+
   if (extractedData) {
     return (
       <section id="brand-summary">
@@ -223,18 +262,37 @@ export function BrandExtractionSection({
                       <RadioGroupItem value={i.toString()} id={`vid-${i}`} />
                     </CardHeader>
                     <CardContent>
-                      <Label htmlFor={`url-${i}`} className="sr-only">Video URL {i + 1}</Label>
-                       <div className="relative">
-                        <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id={`url-${i}`}
-                          placeholder="https://youtube.com/watch?v=..."
-                          className="pl-9"
-                          value={videoUrls[i]}
-                          onChange={(e) => handleUrlChange(i, e.target.value)}
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">Paste a YouTube link.</p>
+                      <Tabs value={videoInputs[i].type} onValueChange={(value) => handleTabChange(i, value as 'url' | 'file')} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                           <TabsTrigger value="url"><Youtube className="mr-2 h-4 w-4" /> Link</TabsTrigger>
+                          <TabsTrigger value="file"><UploadCloud className="mr-2 h-4 w-4" /> Upload</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="url" className="pt-4">
+                          <Label htmlFor={`url-${i}`} className="sr-only">Video URL {i + 1}</Label>
+                           <div className="relative">
+                            <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              id={`url-${i}`}
+                              placeholder="https://youtube.com/watch?v=..."
+                              className="pl-9"
+                              value={videoInputs[i].url}
+                              onChange={(e) => handleInputChange(i, e.target.value, 'url')}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">Paste a YouTube link.</p>
+                        </TabsContent>
+                        <TabsContent value="file" className="pt-4">
+                           <Label htmlFor={`file-${i}`} className="sr-only">Upload Video {i + 1}</Label>
+                           <Input
+                              id={`file-${i}`}
+                              type="file"
+                              accept="video/*"
+                              className="text-sm"
+                              onChange={(e) => handleInputChange(i, e.target.files?.[0] || null, 'file')}
+                           />
+                           {videoInputs[i].file && <p className="text-xs text-muted-foreground mt-2 truncate">Selected: {videoInputs[i].file?.name}</p>}
+                        </TabsContent>
+                      </Tabs>
                     </CardContent>
                   </Card>
                 </div>
