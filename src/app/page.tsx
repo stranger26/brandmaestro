@@ -7,7 +7,7 @@ import { StrategySection } from '@/components/strategy-section';
 import type { ExtractBrandElementsOutput } from '@/ai/flows/extract-brand-elements-from-videos';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Film } from 'lucide-react';
 
 export default function Home() {
   const [brandGuidelines, setBrandGuidelines] =
@@ -40,12 +40,19 @@ export default function Home() {
               <Separator className="my-12" />
               <StrategySection />
               <Separator className="my-12" />
-              <div className="text-center">
+              <div className="text-center space-y-4">
                 <Button asChild size="lg">
                   <Link href="/brandcheck">
                     <CheckCircle className="mr-2" /> Run Compliance Check
                   </Link>
                 </Button>
+                <div className="text-center">
+                    <Button asChild size="lg" variant="destructive">
+                        <Link href="/vidgen">
+                        <Film className="mr-2" /> Generate Video from Script
+                        </Link>
+                    </Button>
+                </div>
               </div>
             </>
           )}
