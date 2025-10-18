@@ -20,6 +20,12 @@ import {
   type GenerateVideoFromScriptInput,
   type GenerateVideoFromScriptOutput,
 } from '@/ai/flows/generate-video-from-script';
+import {
+  enhancedBrandComplianceCheck,
+  hybridBrandComplianceCheck,
+  type EnhancedBrandComplianceInput,
+  type EnhancedBrandComplianceOutput,
+} from '@/ai/flows/enhanced-brand-compliance-with-groq';
 
 export async function handleExtractBrandElements(
   data: ExtractBrandElementsInput
@@ -66,5 +72,29 @@ export async function handleGenerateVideoFromScript(
   } catch (error) {
     console.error('Error in handleGenerateVideoFromScript:', error);
     throw error as Error;
+  }
+}
+
+export async function handleEnhancedBrandCompliance(
+  data: EnhancedBrandComplianceInput
+): Promise<EnhancedBrandComplianceOutput> {
+  try {
+    const result = await enhancedBrandComplianceCheck(data);
+    return result;
+  } catch (error) {
+    console.error('Error in handleEnhancedBrandCompliance:', error);
+    throw new Error('Failed to perform enhanced brand compliance check.');
+  }
+}
+
+export async function handleHybridBrandCompliance(
+  data: EnhancedBrandComplianceInput
+): Promise<EnhancedBrandComplianceOutput> {
+  try {
+    const result = await hybridBrandComplianceCheck(data);
+    return result;
+  } catch (error) {
+    console.error('Error in handleHybridBrandCompliance:', error);
+    throw new Error('Failed to perform hybrid brand compliance check.');
   }
 }
