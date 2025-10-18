@@ -39,21 +39,6 @@ export default function Home() {
             <>
               <Separator className="my-12" />
               <StrategySection />
-              <Separator className="my-12" />
-              <div className="text-center space-y-4">
-                <Button asChild size="lg">
-                  <Link href="/brandcheck">
-                    <CheckCircle className="mr-2" /> Run Compliance Check
-                  </Link>
-                </Button>
-                <div className="text-center">
-                    <Button asChild size="lg" variant="destructive">
-                        <Link href="/vidgen">
-                        <Film className="mr-2" /> Generate Video from Script
-                        </Link>
-                    </Button>
-                </div>
-              </div>
             </>
           )}
         </div>
