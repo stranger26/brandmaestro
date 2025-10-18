@@ -262,7 +262,7 @@ export function BrandExtractionSection({
     <section id="brand-extraction">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold font-headline tracking-tight">
-          Discover Your Brand DNA
+          Leverage Your Influencer's Brand DNA
         </h2>
         <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
           Upload up to 3 videos or provide YouTube links. Our AI will analyze your
