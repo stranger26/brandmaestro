@@ -187,4 +187,5 @@ export default function VidgenPage() {
         </div>
       </footer>
     </div>
-    
+  );
+}
