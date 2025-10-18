@@ -94,30 +94,30 @@ export default function VidgenPage() {
                 )}
                 {isPending ? 'Generating...' : 'Generate Video'}
               </Button>
-
-              {isPending && (
-                <div className="flex flex-col items-center justify-center text-center p-6">
-                  <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-                  <p className="font-semibold">Generating Video...</p>
-                  <p className="text-sm text-muted-foreground">
-                    This may take up to a minute. Please wait.
-                  </p>
-                </div>
-              )}
-
-              {videoUrl && !isPending && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-2 text-center">
-                    Generated Video
-                  </h3>
-                  <div className="aspect-video bg-secondary rounded-lg overflow-hidden">
-                    <video src={videoUrl} controls className="w-full h-full" />
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </section>
+
+        {isPending && (
+          <div className="flex flex-col items-center justify-center text-center p-6 mt-8">
+            <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+            <p className="font-semibold">Generating Video...</p>
+            <p className="text-sm text-muted-foreground">
+              This may take up to a minute. Please wait.
+            </p>
+          </div>
+        )}
+
+        {videoUrl && !isPending && (
+          <div className="mt-8 max-w-4xl mx-auto">
+            <h3 className="text-lg font-semibold mb-4 text-center">
+              Generated Video
+            </h3>
+            <div className="aspect-video bg-secondary rounded-lg overflow-hidden shadow-lg">
+              <video src={videoUrl} controls className="w-full h-full" />
+            </div>
+          </div>
+        )}
       </main>
       <footer className="py-6 text-center text-sm text-muted-foreground">
         <div className="container mx-auto px-4">
