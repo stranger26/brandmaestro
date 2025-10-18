@@ -4,3 +4,4 @@ config();
 import '@/ai/flows/extract-brand-elements-from-videos.ts';
 import '@/ai/flows/get-content-strategy-advice.ts';
 import '@/ai/flows/check-video-for-brand-compliance.ts';
+import '@/ai/flows/generate-video-from-script.ts';

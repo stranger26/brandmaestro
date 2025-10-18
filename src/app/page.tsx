@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { Header } from '@/components/header';
 import { BrandExtractionSection } from '@/components/brand-extraction-section';
 import { ComplianceSection } from '@/components/compliance-section';
@@ -7,6 +8,8 @@ import { StrategySection } from '@/components/strategy-section';
 import type { ExtractBrandElementsOutput } from '@/ai/flows/extract-brand-elements-from-videos';
 import { Separator } from '@/components/ui/separator';
 import { VideogenSection } from '@/components/videogen-section';
+import { Button } from '@/components/ui/button';
+import { Film } from 'lucide-react';
 
 export default function Home() {
   const [brandGuidelines, setBrandGuidelines] =
@@ -22,6 +25,13 @@ export default function Home() {
           {brandGuidelines && (
             <>
               <Separator className="my-12" />
+              <div className="text-center">
+                <Button asChild size="lg" variant="destructive" className="mb-12">
+                  <Link href="/vidgen">
+                    <Film className="mr-2" /> Generate Video from Script
+                  </Link>
+                </Button>
+              </div>
               <ComplianceSection brandGuidelines={brandGuidelines} />
               <Separator className="my-12" />
               <StrategySection />

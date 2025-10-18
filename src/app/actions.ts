@@ -15,6 +15,11 @@ import {
   type ContentStrategyAdviceInput,
   type ContentStrategyAdviceOutput,
 } from '@/ai/flows/get-content-strategy-advice';
+import {
+  generateVideoFromScript,
+  type GenerateVideoFromScriptInput,
+  type GenerateVideoFromScriptOutput,
+} from '@/ai/flows/generate-video-from-script';
 
 export async function handleExtractBrandElements(
   data: ExtractBrandElementsInput
@@ -49,5 +54,17 @@ export async function handleGetStrategy(
   } catch (error) {
     console.error('Error in handleGetStrategy:', error);
     throw new Error('Failed to get content strategy advice.');
+  }
+}
+
+export async function handleGenerateVideoFromScript(
+  data: GenerateVideoFromScriptInput
+): Promise<GenerateVideoFromScriptOutput> {
+  try {
+    const result = await generateVideoFromScript(data);
+    return result;
+  } catch (error) {
+    console.error('Error in handleGenerateVideoFromScript:', error);
+    throw new Error('Failed to generate video from script.');
   }
 }
