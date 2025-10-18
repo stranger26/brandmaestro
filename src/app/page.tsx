@@ -25,9 +25,9 @@ export default function Home() {
           {brandGuidelines && (
             <>
               <Separator className="my-12" />
-              <ComplianceSection brandGuidelines={brandGuidelines} />
-              <Separator className="my-12" />
               <StrategySection />
+              <Separator className="my-12" />
+              <ComplianceSection brandGuidelines={brandGuidelines} />
               <Separator className="my-12" />
               <VideogenSection brandGuidelines={brandGuidelines} />
               <div className="text-center mt-12">
