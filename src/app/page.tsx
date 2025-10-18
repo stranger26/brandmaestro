@@ -84,7 +84,7 @@ export default function Home() {
                     <p className="mb-6 text-muted-foreground">
                       Use the power of AI to generate short videos that match your brand's style.
                     </p>
-                    <Button asChild size="lg" className="w-full">
+                    <Button asChild size="lg" variant="destructive" className="w-full">
                        <Link href="/vidgen">
                         Generate Video from Script
                         <ArrowRight className="ml-2" />
