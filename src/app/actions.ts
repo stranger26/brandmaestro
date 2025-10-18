@@ -65,6 +65,6 @@ export async function handleGenerateVideoFromScript(
     return result;
   } catch (error) {
     console.error('Error in handleGenerateVideoFromScript:', error);
-    throw new Error('Failed to generate video from script.');
+    throw error as Error;
   }
 }

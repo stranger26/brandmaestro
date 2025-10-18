@@ -26,10 +26,7 @@ export type GenerateVideoFromScriptOutput = z.infer<
   typeof GenerateVideoFromScriptOutputSchema
 >;
 
-async function downloadVideo(
-  video: MediaPart,
-  path: string
-): Promise<string> {
+async function toDataUri(video: MediaPart): Promise<string> {
   const fetch = (await import('node-fetch')).default;
   // Add API key before fetching the video.
   const videoDownloadResponse = await fetch(
@@ -44,7 +41,11 @@ async function downloadVideo(
   }
 
   const videoBuffer = await videoDownloadResponse.arrayBuffer();
-  return `data:video/mp4;base64,${Buffer.from(videoBuffer).toString('base64')}`;
+  const contentType =
+    video.media!.contentType || videoDownloadResponse.headers.get('content-type');
+  return `data:${contentType};base64,${Buffer.from(
+    videoBuffer
+  ).toString('base64')}`;
 }
 
 const generateVideoFromScriptFlow = ai.defineFlow(
@@ -82,7 +83,7 @@ const generateVideoFromScriptFlow = ai.defineFlow(
     if (!video) {
       throw new Error('Failed to find the generated video');
     }
-    const videoDataUrl = await downloadVideo(video, 'output.mp4');
+    const videoDataUrl = await toDataUri(video);
     return {
       videoUrl: videoDataUrl,
     };
