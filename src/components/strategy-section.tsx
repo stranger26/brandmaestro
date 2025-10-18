@@ -48,22 +48,17 @@ export function StrategySection() {
 
   return (
     <section id="content-strategy">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold font-headline tracking-tight">
-          AI-Powered Content Strategy
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          Get actionable insights to grow your channel and reinforce your brand.
-        </p>
-      </div>
-      <Card className="max-w-4xl mx-auto">
-        <CardContent className="p-6">
-          {!advice ? (
-            <div className="flex flex-col items-center justify-center text-center p-8">
-              <p className="mb-4 text-muted-foreground">
-                Click the button to generate personalized content strategy advice based on your brand profile.
-              </p>
-              <Button size="lg" onClick={getAdvice} disabled={isPending}>
+       <Card className="max-w-4xl mx-auto">
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-2xl font-bold font-headline tracking-tight">AI-Powered Content Strategy</CardTitle>
+              <CardDescription className="mt-2">
+                Get actionable insights to grow your channel and reinforce your brand.
+              </CardDescription>
+            </div>
+            {!advice && (
+               <Button onClick={getAdvice} disabled={isPending} className="ml-4 flex-shrink-0">
                 {isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -71,12 +66,15 @@ export function StrategySection() {
                 )}
                 {isPending ? 'Generating...' : 'Get Strategy Advice'}
               </Button>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-3 gap-6">
+            )}
+          </div>
+        </CardHeader>
+        {advice && (
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-6 pt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><Lightbulb className="text-accent" /> Production</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-lg"><Lightbulb className="text-accent" /> Production</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
@@ -86,7 +84,7 @@ export function StrategySection() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><TrendingUp className="text-accent"/> Language</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-lg"><TrendingUp className="text-accent"/> Language</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
@@ -96,7 +94,7 @@ export function StrategySection() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><UserCheck className="text-accent" /> Persona</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-lg"><UserCheck className="text-accent" /> Persona</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
@@ -105,8 +103,8 @@ export function StrategySection() {
                 </CardContent>
               </Card>
             </div>
-          )}
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
     </section>
   );
