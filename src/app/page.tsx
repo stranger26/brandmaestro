@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -7,7 +8,14 @@ import { StrategySection } from '@/components/strategy-section';
 import type { ExtractBrandElementsOutput } from '@/ai/flows/extract-brand-elements-from-videos';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Film } from 'lucide-react';
+import { CheckCircle, Film, ArrowRight } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export default function Home() {
   const [brandGuidelines, setBrandGuidelines] =
@@ -38,27 +46,45 @@ export default function Home() {
           {brandGuidelines && (
             <>
               <Separator className="my-12" />
-              <div className="flex justify-center gap-4">
-                <Button asChild variant="outline" size="lg">
-                  <Link href="/brandcheck">
-                    <CheckCircle className="mr-2" />
-                    Brand Compliance Check
-                  </Link>
-                </Button>
-                <Button asChild variant="destructive" size="lg">
-                  <Link href="/vidgen">
-                    <Film className="mr-2" />
-                    Video Generation from Script
-                  </Link>
-                </Button>
+              <div className="text-center">
+                  <Button asChild variant="outline" size="lg">
+                    <Link href="/brandcheck">
+                      <CheckCircle className="mr-2" />
+                      Run a Brand Compliance Check
+                    </Link>
+                  </Button>
               </div>
+
               <Separator className="my-12" />
-              <StrategySection />
+
+              <div className="grid md:grid-cols-2 gap-8">
+                <StrategySection />
+                <Card className="flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold font-headline tracking-tight">Video Generation</CardTitle>
+                    <CardDescription>
+                      Create on-brand video content from a simple text script.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow flex flex-col items-center justify-center text-center">
+                    <Film className="w-16 h-16 text-primary mb-4" />
+                    <p className="mb-6 text-muted-foreground">
+                      Use the power of AI to generate short videos that match your brand's style.
+                    </p>
+                    <Button asChild size="lg" className="w-full">
+                       <Link href="/vidgen">
+                        Generate Video from Script
+                        <ArrowRight className="ml-2" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </>
           )}
         </div>
       </main>
-      <footer className="py-6 text-center text-sm text-muted-foreground">
+      <footer className="py-6 mt-12 text-center text-sm text-muted-foreground">
         <div className="container mx-auto px-4">
           <p>Built with Brand Maestro. Controlled chaos, with training wheels.</p>
         </div>
