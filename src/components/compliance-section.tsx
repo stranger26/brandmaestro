@@ -7,6 +7,7 @@ import {
   AlertCircle,
   CheckCircle,
   Eye,
+  Youtube,
 } from 'lucide-react';
 import {
   Card,
@@ -30,6 +31,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface ComplianceSectionProps {
   brandGuidelines: ExtractBrandElementsOutput;
@@ -48,6 +50,8 @@ export function ComplianceSection({ brandGuidelines }: ComplianceSectionProps) {
   const { toast } = useToast();
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [inputType, setInputType] = useState('upload');
   const [report, setReport] =
     useState<CheckVideoForBrandComplianceOutput | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -58,16 +62,27 @@ export function ComplianceSection({ brandGuidelines }: ComplianceSectionProps) {
     const file = event.target.files?.[0];
     if (file) {
       setVideoFile(file);
+      setYoutubeUrl('');
       setVideoSrc(URL.createObjectURL(file));
       setReport(null);
     }
   };
+  
+  const handleYoutubeUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setYoutubeUrl(e.target.value);
+    setVideoFile(null);
+    setVideoSrc(null); // Simple URL handling, no embed for now
+    setReport(null);
+  }
 
   const handleSubmit = () => {
-    if (!videoFile) {
+    const isYoutube = inputType === 'youtube' && youtubeUrl;
+    const isUpload = inputType === 'upload' && videoFile;
+
+    if (!isYoutube && !isUpload) {
       toast({
-        title: 'No Video Selected',
-        description: 'Please upload a video file to check.',
+        title: 'No Video Provided',
+        description: 'Please upload a video file or provide a YouTube URL.',
         variant: 'destructive',
       });
       return;
@@ -75,11 +90,24 @@ export function ComplianceSection({ brandGuidelines }: ComplianceSectionProps) {
 
     startTransition(async () => {
       try {
-        const videoDataUri = await toDataURI(videoFile);
+        let videoDataUri: string;
+        if (isUpload) {
+          videoDataUri = await toDataURI(videoFile!);
+        } else {
+          // The flow can handle URLs directly
+          videoDataUri = youtubeUrl;
+        }
+
         const result = await handleCheckCompliance({
           videoDataUri,
           brandGuidelines: JSON.stringify(brandGuidelines),
         });
+        
+        if (isYoutube) {
+          // Since we can't play youtube videos directly, we just show the URL
+          setVideoSrc(youtubeUrl);
+        }
+
         setReport(result);
         toast({
           title: 'Compliance Check Complete',
@@ -133,40 +161,67 @@ export function ComplianceSection({ brandGuidelines }: ComplianceSectionProps) {
         <CardContent className="p-6">
           <div className="grid md:grid-cols-2 gap-8 items-start">
             <div>
-              <div className="flex flex-col items-center justify-center w-full">
-                <label
-                  htmlFor="dropzone-file"
-                  className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors"
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <UploadCloud className="w-10 h-10 mb-3 text-muted-foreground" />
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      <span className="font-semibold">Click to upload</span> or drag and
-                      drop
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      MP4, WEBM, or OGG
-                    </p>
+               <Tabs value={inputType} onValueChange={setInputType} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="upload"><UploadCloud className="mr-2" /> Upload</TabsTrigger>
+                  <TabsTrigger value="youtube"><Youtube className="mr-2" /> YouTube</TabsTrigger>
+                </TabsList>
+                <TabsContent value="upload" className="mt-4">
+                   <div className="flex flex-col items-center justify-center w-full">
+                    <label
+                      htmlFor="dropzone-file"
+                      className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <UploadCloud className="w-10 h-10 mb-3 text-muted-foreground" />
+                        <p className="mb-2 text-sm text-muted-foreground">
+                          <span className="font-semibold">Click to upload</span> or drag and
+                          drop
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          MP4, WEBM, or OGG
+                        </p>
+                      </div>
+                      <Input
+                        id="dropzone-file"
+                        type="file"
+                        className="hidden"
+                        accept="video/*"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                    {videoFile && (
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        Selected: {videoFile.name}
+                      </p>
+                    )}
                   </div>
-                  <Input
-                    id="dropzone-file"
-                    type="file"
-                    className="hidden"
-                    accept="video/*"
-                    onChange={handleFileChange}
-                  />
-                </label>
-                {videoFile && (
-                  <p className="mt-4 text-sm text-muted-foreground">
-                    Selected: {videoFile.name}
-                  </p>
-                )}
-              </div>
+                </TabsContent>
+                 <TabsContent value="youtube" className="mt-4">
+                  <div className="flex flex-col items-center justify-center w-full h-64 p-4">
+                    <Label htmlFor="youtube-url" className="w-full text-left mb-2">YouTube URL</Label>
+                     <div className="relative w-full">
+                        <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="youtube-url"
+                          placeholder="https://youtube.com/watch?v=..."
+                          className="pl-9"
+                          value={youtubeUrl}
+                          onChange={handleYoutubeUrlChange}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2 w-full text-left">
+                        Paste a link to a YouTube video.
+                      </p>
+                  </div>
+                 </TabsContent>
+              </Tabs>
+
               <Button
                 size="lg"
                 className="w-full mt-6"
                 onClick={handleSubmit}
-                disabled={isPending || !videoFile}
+                disabled={isPending || (!videoFile && !youtubeUrl)}
               >
                 {isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -179,11 +234,14 @@ export function ComplianceSection({ brandGuidelines }: ComplianceSectionProps) {
 
             <div className="space-y-4">
               <div className="aspect-video bg-secondary rounded-lg overflow-hidden relative">
-                {videoSrc ? (
+                {videoSrc && !youtubeUrl.includes('youtube.com')? (
                   <video ref={videoRef} src={videoSrc} controls className="w-full h-full" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    <p>Upload a video to preview</p>
+                    {videoSrc && youtubeUrl.includes('youtube.com') ? 
+                      <a href={videoSrc} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">{videoSrc}</a>
+                      : <p>Upload a video to preview</p>
+                    }
                   </div>
                 )}
               </div>
@@ -196,13 +254,14 @@ export function ComplianceSection({ brandGuidelines }: ComplianceSectionProps) {
                       max={duration}
                       step={1}
                       onValueChange={handleSeek}
+                      disabled={!duration}
                     />
                     {report.map(issue => (
                       <Popover key={issue.timestamp}>
                         <PopoverTrigger asChild>
                            <button
                             className="absolute -top-1 w-2 h-2 rounded-full bg-destructive transform -translate-x-1/2"
-                            style={{ left: `${(issue.timestamp / duration) * 100}%` }}
+                            style={{ left: duration ? `${(issue.timestamp / duration) * 100}%`: '0%' }}
                             aria-label={`Issue at ${issue.timestamp}s`}
                            />
                         </PopoverTrigger>
