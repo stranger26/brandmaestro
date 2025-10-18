@@ -10,18 +10,16 @@
 import { ai } from '@/ai/genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'genkit';
-import * as fs from 'fs';
-import { Readable } from 'stream';
 import { MediaPart } from 'genkit';
 
-export const GenerateVideoFromScriptInputSchema = z.object({
+const GenerateVideoFromScriptInputSchema = z.object({
   script: z.string().describe('The text script to generate the video from.'),
 });
 export type GenerateVideoFromScriptInput = z.infer<
   typeof GenerateVideoFromScriptInputSchema
 >;
 
-export const GenerateVideoFromScriptOutputSchema = z.object({
+const GenerateVideoFromScriptOutputSchema = z.object({
   videoUrl: z.string().describe('The data URI of the generated video.'),
 });
 export type GenerateVideoFromScriptOutput = z.infer<
@@ -49,7 +47,7 @@ async function downloadVideo(
   return `data:video/mp4;base64,${Buffer.from(videoBuffer).toString('base64')}`;
 }
 
-export const generateVideoFromScriptFlow = ai.defineFlow(
+const generateVideoFromScriptFlow = ai.defineFlow(
   {
     name: 'generateVideoFromScriptFlow',
     inputSchema: GenerateVideoFromScriptInputSchema,
