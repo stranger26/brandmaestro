@@ -38,6 +38,21 @@ export default function Home() {
           {brandGuidelines && (
             <>
               <Separator className="my-12" />
+              <div className="flex justify-center gap-4">
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/brandcheck">
+                    <CheckCircle className="mr-2" />
+                    Brand Compliance Check
+                  </Link>
+                </Button>
+                <Button asChild variant="destructive" size="lg">
+                  <Link href="/vidgen">
+                    <Film className="mr-2" />
+                    Video Generation from Script
+                  </Link>
+                </Button>
+              </div>
+              <Separator className="my-12" />
               <StrategySection />
             </>
           )}
