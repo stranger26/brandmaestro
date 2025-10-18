@@ -18,6 +18,9 @@ import {
   BarChart2,
   CheckCircle,
   Wand2,
+  Smile,
+  Clock,
+  Speaker,
 } from 'lucide-react';
 import {
   Card,
@@ -34,6 +37,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { handleExtractBrandElements } from '@/app/actions';
 import type { ExtractBrandElementsOutput } from '@/ai/flows/extract-brand-elements-from-videos';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartConfig,
+} from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from 'recharts';
+import { Separator } from './ui/separator';
 
 interface BrandExtractionSectionProps {
   onExtractionComplete: (guidelines: ExtractBrandElementsOutput) => void;
@@ -128,6 +139,17 @@ export function BrandExtractionSection({
   }
 
   if (extractedData) {
+    const typographyData = extractedData.coreVisualElements.typography.detectedFonts.map(font => ({ name: font, value: 1 }));
+    const colorData = extractedData.coreVisualElements.colorPalette.hexValuesRankedByFrequency.map(color => ({ name: color, value: 1 }));
+
+    const chartConfig: ChartConfig = {};
+    typographyData.forEach(item => {
+      chartConfig[item.name] = { label: item.name };
+    });
+    colorData.forEach(item => {
+      chartConfig[item.name] = { label: item.name, color: item.name };
+    });
+
     return (
       <section id="brand-summary">
         <div className="text-center mb-8">
@@ -136,6 +158,64 @@ export function BrandExtractionSection({
             AI-generated brand identity based on your video content.
           </p>
         </div>
+
+        <div className="mb-8">
+            <h3 className="text-2xl font-bold font-headline mb-4 text-center">At a Glance</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Palette className="text-primary"/> Visuals</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Color Palette</h4>
+                     <div className="flex flex-wrap gap-2">
+                      {extractedData.coreVisualElements.colorPalette.hexValuesRankedByFrequency.slice(0, 5).map((color) => (
+                          <div key={color} className="w-6 h-6 rounded-full border" style={{ backgroundColor: color }} title={color} />
+                      ))}
+                    </div>
+                  </div>
+                   <div>
+                    <h4 className="font-semibold mb-2">Typography</h4>
+                    <p className="text-sm text-muted-foreground">{extractedData.coreVisualElements.typography.detectedFonts.slice(0,2).join(', ')}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Music className="text-primary"/> Audio</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                   <div>
+                    <h4 className="font-semibold mb-2">Tonal Mood</h4>
+                    <p className="text-sm text-muted-foreground">{extractedData.audioAndNarrativeStyle.musicAndSound.tonalMood}</p>
+                  </div>
+                   <div>
+                    <h4 className="font-semibold mb-2">BPM Range</h4>
+                    <p className="text-sm text-muted-foreground">{extractedData.audioAndNarrativeStyle.musicAndSound.bpmRange}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><MessageCircle className="text-primary"/> Narrative</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                   <div>
+                    <h4 className="font-semibold mb-2">Archetype</h4>
+                    <p className="text-sm text-muted-foreground">{extractedData.audioAndNarrativeStyle.storyStructure.structureArchetype}</p>
+                  </div>
+                   <div>
+                    <h4 className="font-semibold mb-2">Linguistic Tone</h4>
+                    <p className="text-sm text-muted-foreground">{extractedData.audioAndNarrativeStyle.toneAndLanguage.linguisticToneClassifier}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+        </div>
+
+        <Separator className="my-8" />
+        
         <Tabs defaultValue="visuals" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="visuals"><Palette className="mr-2" />Visuals</TabsTrigger>
@@ -320,3 +400,5 @@ export function BrandExtractionSection({
     </section>
   );
 }
+
+    
