@@ -25,18 +25,18 @@ export default function Home() {
           {brandGuidelines && (
             <>
               <Separator className="my-12" />
-              <div className="text-center">
+              <ComplianceSection brandGuidelines={brandGuidelines} />
+              <Separator className="my-12" />
+              <StrategySection />
+              <Separator className="my-12" />
+              <VideogenSection brandGuidelines={brandGuidelines} />
+              <div className="text-center mt-12">
                 <Button asChild size="lg" variant="destructive" className="mb-12">
                   <Link href="/vidgen">
                     <Film className="mr-2" /> Generate Video from Script
                   </Link>
                 </Button>
               </div>
-              <ComplianceSection brandGuidelines={brandGuidelines} />
-              <Separator className="my-12" />
-              <StrategySection />
-              <Separator className="my-12" />
-              <VideogenSection brandGuidelines={brandGuidelines} />
             </>
           )}
         </div>
