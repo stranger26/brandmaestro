@@ -9,6 +9,7 @@ import {
   Eye,
   Youtube,
   ArrowLeft,
+  Film,
 } from 'lucide-react';
 import {
   Card,
@@ -36,6 +37,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/header';
 import Link from 'next/link';
+import { Separator } from '@/components/ui/separator';
 
 const toDataURI = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -360,6 +362,14 @@ export default function BrandCheckPage() {
             </CardContent>
           </Card>
         </section>
+        <Separator className="my-12" />
+        <div className="text-center mt-12">
+          <Button asChild size="lg" variant="destructive" className="mb-12">
+            <Link href="/vidgen">
+              <Film className="mr-2" /> Generate Video from Script
+            </Link>
+          </Button>
+        </div>
       </main>
       <footer className="py-6 text-center text-sm text-muted-foreground">
         <div className="container mx-auto px-4">

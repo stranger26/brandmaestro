@@ -53,13 +53,6 @@ export default function Home() {
             </>
           )}
         </div>
-        <div className="text-center mt-12">
-          <Button asChild size="lg" variant="destructive" className="mb-12">
-            <Link href="/vidgen">
-              <Film className="mr-2" /> Generate Video from Script
-            </Link>
-          </Button>
-        </div>
       </main>
       <footer className="py-6 text-center text-sm text-muted-foreground">
         <div className="container mx-auto px-4">
