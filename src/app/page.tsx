@@ -64,7 +64,7 @@ export default function Home() {
                      <p className="mb-6 text-muted-foreground">
                       Ensure your content aligns perfectly with your extracted brand DNA.
                     </p>
-                    <Button asChild size="lg" variant="outline" className="w-full">
+                    <Button asChild size="lg" variant="success" className="w-full">
                         <Link href="/brandcheck">
                         Run a Brand Compliance Check
                         <ArrowRight className="ml-2" />
