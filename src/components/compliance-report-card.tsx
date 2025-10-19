@@ -57,13 +57,15 @@ export function ComplianceReportCard({
   };
 
   // Get category icon
-  const getCategoryIcon = (category: string) => {
+  const getCategoryIcon = (category: string, issue?: string) => {
     switch (category) {
       case 'visual': return '👁️';
       case 'audio': return '🔊';
       case 'text': return '📝';
       case 'branding': return '🏷️';
       case 'technical': return '⚙️';
+      case 'contextual-risk': 
+        return issue?.includes('✅') ? '✅' : '🔍';
       default: return '⚠️';
     }
   };
@@ -156,11 +158,17 @@ export function ComplianceReportCard({
         <CardContent className="max-h-96 overflow-y-auto">
           {filteredIssues.length > 0 ? (
             <div className="space-y-4">
-              {filteredIssues.map((issue, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 border rounded-lg bg-card">
+            {filteredIssues.map((issue, i) => (
+              <div key={i} className={`flex items-start gap-3 p-4 border rounded-lg ${
+                issue.category === 'contextual-risk' 
+                  ? issue.issue.includes('✅') 
+                    ? 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800'
+                    : 'bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800'
+                  : 'bg-card'
+              }`}>
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm">
-                      {getCategoryIcon(issue.category || 'visual')}
+                      {getCategoryIcon(issue.category || 'visual', issue.issue)}
                     </div>
                   </div>
                   
@@ -191,6 +199,31 @@ export function ComplianceReportCard({
                       <p className="text-sm text-muted-foreground">
                         <span className="font-medium text-foreground">Fix:</span> {issue.suggestedFix}
                       </p>
+                      
+                      {/* Show source URL and published date for contextual risks */}
+                      {issue.category === 'contextual-risk' && (
+                        <div className="mt-2 pt-2 border-t border-muted">
+                          {issue.sourceUrl && (
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium">Source:</span>{' '}
+                              <a 
+                                href={issue.sourceUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline"
+                              >
+                                View Article
+                              </a>
+                            </p>
+                          )}
+                          {issue.publishedDate && (
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium">Published:</span>{' '}
+                              {new Date(issue.publishedDate).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                     
                   </div>

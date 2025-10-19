@@ -24,8 +24,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { handleCheckCompliance } from '@/app/actions';
+import { handleCheckCompliance, handleEnhancedComplianceWithExa } from '@/app/actions';
 import type { CheckVideoForBrandComplianceOutput } from '@/ai/flows/check-video-for-brand-compliance';
+import type { EnhancedComplianceWithExaOutput } from '@/ai/flows/enhanced-compliance-with-exa';
 import type { ExtractBrandElementsOutput } from '@/ai/flows/extract-brand-elements-from-videos';
 import {
   Dialog,
@@ -40,6 +41,7 @@ import { Header } from '@/components/header';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { ComplianceReportCard } from '@/components/compliance-report-card';
+import { Switch } from '@/components/ui/switch';
 
 const toDataURI = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -60,12 +62,22 @@ export default function BrandCheckPage() {
   const [inputType, setInputType] = useState('upload');
   const [report, setReport] =
     useState<CheckVideoForBrandComplianceOutput | null>(null);
+  const [enhancedReport, setEnhancedReport] =
+    useState<EnhancedComplianceWithExaOutput | null>(null);
   const [isUploadSectionOpen, setIsUploadSectionOpen] = useState(true);
+  const [enableSensitiveTopicsCheck, setEnableSensitiveTopicsCheck] = useState(true);
+  const [brandName, setBrandName] = useState('');
 
   useEffect(() => {
     const storedGuidelines = localStorage.getItem('brandGuidelines');
     if (storedGuidelines) {
-      setBrandGuidelines(JSON.parse(storedGuidelines));
+      const guidelines = JSON.parse(storedGuidelines);
+      setBrandGuidelines(guidelines);
+      
+      // Extract brand name from guidelines if available
+      if (guidelines.brandName) {
+        setBrandName(guidelines.brandName);
+      }
     }
   }, []);
 
@@ -106,6 +118,15 @@ export default function BrandCheckPage() {
       return;
     }
 
+    if (enableSensitiveTopicsCheck && !brandName.trim()) {
+      toast({
+        title: 'Brand Name Required',
+        description: 'Please provide a brand name for sensitive topics analysis.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     startTransition(async () => {
       try {
         let videoDataUri: string;
@@ -116,22 +137,64 @@ export default function BrandCheckPage() {
           videoDataUri = youtubeUrl;
         }
 
+        if (enableSensitiveTopicsCheck) {
+          // Use enhanced compliance check with Exa
+          const enhancedResult = await handleEnhancedComplianceWithExa({
+            videoDataUri,
+            brandGuidelines: JSON.stringify(brandGuidelines),
+            brandName: brandName.trim(),
+            enableSensitiveTopicsCheck: true,
+          });
 
-        const result = await handleCheckCompliance({
-          videoDataUri,
-          brandGuidelines: JSON.stringify(brandGuidelines),
-        });
+          // Combine technical and contextual issues for display
+          const combinedIssues = [...enhancedResult.technicalIssues, ...enhancedResult.contextualRisks];
+          setReport(combinedIssues);
+          setEnhancedReport(enhancedResult);
+          
+          toast({
+            title: 'Enhanced Compliance Check Complete',
+            description: `Found ${enhancedResult.totalIssues} total issues (${enhancedResult.technicalIssues.length} technical, ${enhancedResult.contextualRisks.length} contextual risks).`,
+          });
+        } else {
+          // Use standard compliance check
+          const result = await handleCheckCompliance({
+            videoDataUri,
+            brandGuidelines: JSON.stringify(brandGuidelines),
+          });
 
-        setReport(result);
+          setReport(result);
+          setEnhancedReport(null);
+          toast({
+            title: 'Compliance Check Complete',
+            description: `Found ${result.length} potential issues.`,
+          });
+        }
+
         setIsUploadSectionOpen(false); // Collapse upload section when report is generated
-        toast({
-          title: 'Compliance Check Complete',
-          description: `Found ${result.length} potential issues.`,
-        });
       } catch (error) {
+        const errorMessage = (error as Error).message;
+        console.error('Compliance check error:', error);
+        
+        // Provide more helpful error messages
+        let userMessage = errorMessage;
+        if (errorMessage.includes('EXA_API_KEY') || errorMessage.includes('GROQ_API_KEY')) {
+          userMessage = 'API keys not configured. Please set EXA_API_KEY and GROQ_API_KEY in your environment variables.';
+        } else if (errorMessage.includes('Failed to generate video summary')) {
+          userMessage = 'Video analysis failed. This might be due to API key issues or video format problems.';
+        } else if (errorMessage.includes('Failed to perform enhanced compliance check')) {
+          userMessage = 'Enhanced compliance check failed. Try disabling sensitive topics analysis or check your API keys.';
+        } else if (errorMessage.includes('quota')) {
+          userMessage = 'API quota exceeded. Please try again later or check your API billing settings.';
+        }
+        
+        // Auto-disable enhanced features if they fail
+        if (enableSensitiveTopicsCheck && (errorMessage.includes('EXA_API_KEY') || errorMessage.includes('GROQ_API_KEY') || errorMessage.includes('Failed to generate video summary'))) {
+          setEnableSensitiveTopicsCheck(false);
+        }
+        
         toast({
           title: 'Compliance Check Failed',
-          description: (error as Error).message,
+          description: userMessage,
           variant: 'destructive',
         });
       }
@@ -250,6 +313,51 @@ export default function BrandCheckPage() {
                           </TabsContent>
                         </Tabs>
 
+                        {/* Enhanced Analysis Options */}
+                        <div className="mt-6 space-y-4 p-4 border rounded-lg bg-muted/30">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                              <Label htmlFor="sensitive-topics-toggle" className="text-sm font-medium">
+                                Check for sensitive topics and trending risks
+                              </Label>
+                              <p className="text-xs text-muted-foreground">
+                                Analyzes recent news and cultural context for potential brand risks
+                              </p>
+                            </div>
+                            <Switch
+                              id="sensitive-topics-toggle"
+                              checked={enableSensitiveTopicsCheck}
+                              onCheckedChange={setEnableSensitiveTopicsCheck}
+                            />
+                          </div>
+                          
+                          {enableSensitiveTopicsCheck && (
+                            <div className="space-y-2">
+                              <Label htmlFor="brand-name" className="text-sm font-medium">
+                                Brand Name
+                                {brandName && (
+                                  <span className="ml-2 text-xs text-green-600 dark:text-green-400">
+                                    ✓ Auto-populated from brand analysis
+                                  </span>
+                                )}
+                              </Label>
+                              <Input
+                                id="brand-name"
+                                placeholder="Enter your brand name"
+                                value={brandName}
+                                onChange={(e) => setBrandName(e.target.value)}
+                                className="w-full"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                {brandName 
+                                  ? 'Brand name extracted from your brand analysis (prioritizing channel names). You can edit if needed.'
+                                  : 'Required for contextual risk analysis'
+                                }
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
                         <Button
                           size="lg"
                           className="w-full mt-6"
@@ -261,7 +369,10 @@ export default function BrandCheckPage() {
                           ) : (
                             <CheckCircle className="mr-2 h-4 w-4" />
                           )}
-                          {isPending ? 'Analyzing...' : 'Check Compliance'}
+                          {isPending 
+                            ? (enableSensitiveTopicsCheck ? 'Enhanced Analysis...' : 'Analyzing...') 
+                            : (enableSensitiveTopicsCheck ? 'Enhanced Compliance Check' : 'Check Compliance')
+                          }
                         </Button>
                       </div>
                     </CollapsibleContent>

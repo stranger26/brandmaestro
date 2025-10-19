@@ -33,7 +33,9 @@ const ComplianceIssueSchema = z.object({
   issue: z.string().describe('A specific, detailed description of the compliance issue.'),
   suggestedFix: z.string().describe('A detailed, actionable fix with specific parameters.'),
   severity: z.enum(['low', 'medium', 'high', 'critical']).describe('The severity level of the compliance issue.'),
-  category: z.enum(['visual', 'audio', 'text', 'branding', 'technical']).describe('The category of the compliance issue.'),
+  category: z.enum(['visual', 'audio', 'text', 'branding', 'technical', 'contextual-risk']).describe('The category of the compliance issue.'),
+  sourceUrl: z.string().optional().describe('URL of the source for contextual risk findings.'),
+  publishedDate: z.string().optional().describe('Publication date of the source for contextual risk findings.'),
 });
 
 const CheckVideoForBrandComplianceOutputSchema = z.array(

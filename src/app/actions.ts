@@ -26,6 +26,11 @@ import {
   type EnhancedBrandComplianceInput,
   type EnhancedBrandComplianceOutput,
 } from '@/ai/flows/enhanced-brand-compliance-with-groq';
+import {
+  enhancedComplianceWithExaSync,
+  type EnhancedComplianceWithExaInput,
+  type EnhancedComplianceWithExaOutput,
+} from '@/ai/flows/enhanced-compliance-with-exa';
 
 export async function handleExtractBrandElements(
   data: ExtractBrandElementsInput
@@ -96,5 +101,17 @@ export async function handleHybridBrandCompliance(
   } catch (error) {
     console.error('Error in handleHybridBrandCompliance:', error);
     throw new Error('Failed to perform hybrid brand compliance check.');
+  }
+}
+
+export async function handleEnhancedComplianceWithExa(
+  data: EnhancedComplianceWithExaInput
+): Promise<EnhancedComplianceWithExaOutput> {
+  try {
+    const result = await enhancedComplianceWithExaSync(data);
+    return result;
+  } catch (error) {
+    console.error('Error in handleEnhancedComplianceWithExa:', error);
+    throw new Error('Failed to perform enhanced compliance check with Exa.');
   }
 }
