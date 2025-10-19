@@ -22,6 +22,7 @@ const ExtractBrandElementsInputSchema = z.object({
 export type ExtractBrandElementsInput = z.infer<typeof ExtractBrandElementsInputSchema>;
 
 const ExtractBrandElementsOutputSchema = z.object({
+  brandName: z.string().describe('The brand name extracted from the video content'),
   coreVisualElements: z.object({
     logoUsage: z.object({
       placementCoordinates: z.string().describe('Placement coordinates of the logo.'),
@@ -76,8 +77,18 @@ const prompt = ai.definePrompt({
   name: 'extractBrandElementsPrompt',
   input: {schema: ExtractBrandElementsInputSchema},
   output: {schema: ExtractBrandElementsOutputSchema},
-  prompt: `You are an AI brand analyst. Analyze the videos provided to extract key brand elements.\n\nVideos: {{videoUrls}}\n\nMost Representative Video Index: {{mostRepresentativeVideoIndex}}\n\nOutput a JSON object containing the following brand elements:\n\nCore Visual Elements:\n- Logo Usage: Placement coordinates, animation timing, transparency patterns\n- Color Palette: Hex values ranked by frequency, contextual pairing suggestions\n- Typography: Detected fonts, hierarchy of usage\n- Design Treatments: Common lower-thirds, transitions, overlays, filters\n\nAudio and Narrative Style:\n- Music & Sound: BPM range, tonal mood, instrument bias\n- Tone & Language: Sentiment, linguistic tone classifier (formal/playful/etc.)\n- Story Structure: Average intro/outro time, structure archetype (Hero’s Journey, Tutorial, Review, etc.)\n\nFormat & Technical Instructions:\n- Branding Templates: Auto-generated PowerPoint & title-card templates\n- Video Formats: Aspect ratios, resolutions, subtitle presence\n- Update Protocols: AI generates changelog when style drifts detected\n\nBrand Consistency in Application:\n- Visual Consistency: % deviation from color/font baseline
-- Cohesive Messaging: Script theme clustering for message drift detection`,
+  prompt: `You are an AI brand analyst. Analyze the videos provided to extract key brand elements.\n\nVideos: {{videoUrls}}\n\nMost Representative Video Index: {{mostRepresentativeVideoIndex}}\n\nOutput a JSON object containing the following brand elements:\n\nBrand Identification:\n- Brand Name: The primary brand name, prioritizing channel names, company names, or brand identifiers shown in the videos. Look for:
+  * YouTube channel names or handles
+  * Company/brand names in logos, watermarks, or text overlays
+  * Brand mentions in voiceover or captions
+  * Social media handles or website URLs
+  * Product or service names that represent the brand\n\nCore Visual Elements:\n- Logo Usage: Placement coordinates, animation timing, transparency patterns\n- Color Palette: Hex values ranked by frequency, contextual pairing suggestions\n- Typography: Detected fonts, hierarchy of usage\n- Design Treatments: Common lower-thirds, transitions, overlays, filters\n\nAudio and Narrative Style:\n- Music & Sound: BPM range, tonal mood, instrument bias\n- Tone & Language: Sentiment, linguistic tone classifier (formal/playful/etc.)\n- Story Structure: Average intro/outro time, structure archetype (Hero's Journey, Tutorial, Review, etc.)\n\nFormat & Technical Instructions:\n- Branding Templates: Auto-generated PowerPoint & title-card templates\n- Video Formats: Aspect ratios, resolutions, subtitle presence\n- Update Protocols: AI generates changelog when style drifts detected\n\nBrand Consistency in Application:\n- Visual Consistency: % deviation from color/font baseline\n- Cohesive Messaging: Script theme clustering for message drift detection\n\nIMPORTANT: Always include a "brandName" field with the primary brand name identified in the videos. Priority order:
+1. YouTube channel name or handle (most preferred)
+2. Company/brand name from logos or watermarks
+3. Brand name mentioned in voiceover or text
+4. Social media handle or website domain
+5. Product/service name that represents the brand
+6. If no clear brand name is found, use "Unknown Brand"`,
 });
 
 const extractBrandElementsFlow = ai.defineFlow(

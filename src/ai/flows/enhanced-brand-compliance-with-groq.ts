@@ -94,7 +94,7 @@ async function searchBrandContext(brandName: string): Promise<{
               content: `Search for: ${query}. Provide a concise summary of the most relevant findings.`,
             },
           ],
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           temperature: 0.3,
         });
 
@@ -179,7 +179,7 @@ Output format:
           content: compliancePrompt,
         },
       ],
-      model: 'llama3-8b-8192',
+      model: 'llama-3.1-8b-instant',
       temperature: 0.2,
     });
 
