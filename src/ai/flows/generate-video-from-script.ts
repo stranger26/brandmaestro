@@ -1,16 +1,21 @@
 'use server';
 /**
- * @fileOverview Generates a video from a text script.
+ * @fileOverview Generates a video from a text script using Fal.ai's Veo 3 model.
  *
  * - generateVideoFromScript - A function that handles the video generation process.
  * - GenerateVideoFromScriptInput - The input type for the generateVideoFromScript function.
  * - GenerateVideoFromScriptOutput - The return type for the generateVideoFromScript function.
  */
 
-import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/google-genai';
-import { z } from 'genkit';
-import { MediaPart } from 'genkit';
+import { fal } from '@fal-ai/client';
+import { z } from 'zod';
+
+// Configure Fal.ai client only if API key is available
+if (process.env.FAL_KEY) {
+  fal.config({
+    credentials: process.env.FAL_KEY
+  });
+}
 
 const GenerateVideoFromScriptInputSchema = z.object({
   script: z.string().describe('The text script to generate the video from.'),
@@ -20,78 +25,53 @@ export type GenerateVideoFromScriptInput = z.infer<
 >;
 
 const GenerateVideoFromScriptOutputSchema = z.object({
-  videoUrl: z.string().describe('The data URI of the generated video.'),
+  videoUrl: z.string().describe('The URL of the generated video.'),
 });
 export type GenerateVideoFromScriptOutput = z.infer<
   typeof GenerateVideoFromScriptOutputSchema
 >;
 
-async function toDataUri(video: MediaPart): Promise<string> {
-  const fetch = (await import('node-fetch')).default;
-  // Add API key before fetching the video.
-  const videoDownloadResponse = await fetch(
-    `${video.media!.url}&key=${process.env.GEMINI_API_KEY}`
-  );
-  if (
-    !videoDownloadResponse ||
-    videoDownloadResponse.status !== 200 ||
-    !videoDownloadResponse.body
-  ) {
-    throw new Error('Failed to fetch video');
-  }
-
-  const videoBuffer = await videoDownloadResponse.arrayBuffer();
-  const contentType =
-    video.media!.contentType || videoDownloadResponse.headers.get('content-type');
-  return `data:${contentType};base64,${Buffer.from(
-    videoBuffer
-  ).toString('base64')}`;
-}
-
-const generateVideoFromScriptFlow = ai.defineFlow(
-  {
-    name: 'generateVideoFromScriptFlow',
-    inputSchema: GenerateVideoFromScriptInputSchema,
-    outputSchema: GenerateVideoFromScriptOutputSchema,
-  },
-  async ({ script }) => {
-    let { operation } = await ai.generate({
-      model: googleAI.model('veo-2.0-generate-001'),
-      prompt: script,
-      config: {
-        durationSeconds: 5,
-        aspectRatio: '16:9',
-      },
-    });
-
-    if (!operation) {
-      throw new Error('Expected the model to return an operation');
-    }
-
-    // Wait until the operation completes. Note that this may take some time, maybe even up to a minute. Design the UI accordingly.
-    while (!operation.done) {
-      operation = await ai.checkOperation(operation);
-      // Sleep for 5 seconds before checking again.
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-    }
-
-    if (operation.error) {
-      throw new Error('failed to generate video: ' + operation.error.message);
-    }
-
-    const video = operation.output?.message?.content.find((p) => !!p.media);
-    if (!video) {
-      throw new Error('Failed to find the generated video');
-    }
-    const videoDataUrl = await toDataUri(video);
-    return {
-      videoUrl: videoDataUrl,
-    };
-  }
-);
-
 export async function generateVideoFromScript(
   input: GenerateVideoFromScriptInput
 ): Promise<GenerateVideoFromScriptOutput> {
-  return generateVideoFromScriptFlow(input);
+  const { script } = input;
+
+  // Check if FAL_KEY is configured
+  if (!process.env.FAL_KEY) {
+    // Return a placeholder response for development/testing
+    console.warn('FAL_KEY not configured. Returning placeholder video URL.');
+    return {
+      videoUrl: 'https://placehold.co/1920x1080.mp4?text=Video+Generation+Disabled+-+Add+FAL_KEY+to+.env'
+    };
+  }
+
+  try {
+    console.log('Generating video with Fal.ai Veo 3 for script:', script);
+    
+    // Generate video with Veo 3 via Fal.ai
+    const result = await fal.subscribe("fal-ai/veo3", {
+      input: {
+        prompt: script
+      },
+      onQueueUpdate: (update) => {
+        if (update.status === "IN_PROGRESS") {
+          console.log("Video generation in progress...");
+        }
+      }
+    });
+
+    console.log('Video generation completed:', result);
+    
+    // Extract video URL from result
+    const videoUrl = result.data.video.url;
+    
+    return {
+      videoUrl: videoUrl,
+    };
+  } catch (error) {
+    console.error('Video generation failed:', error);
+    throw new Error(
+      `Failed to generate video: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
 }
